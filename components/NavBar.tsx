@@ -55,7 +55,7 @@ export default function NavBar() {
             <User size={20} />
             {/* Connexion PC seul à droite avec l'icône */}
             <Link 
-              href="/admin" 
+              href="/login" 
               className="hidden lg:flex items-center relative text-marron font-semibold after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-marron after:scale-x-0 after:origin-left hover:after:scale-x-100 after:transition-transform after:duration-400 after:ease-out"
             >
               
@@ -119,7 +119,7 @@ export default function NavBar() {
         {/* Zone de connexion bloquée en bas */}
         <div className="p-6 border-marron/10 shrink-0 ">
           <Link
-            href="/admin" 
+            href="/login" 
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 block w-full text-left font-medium text-lg text-marron hover:opacity-70"
           >

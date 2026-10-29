@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Caveat } from "next/font/google";
 import "./globals.css";
 import NavBar from "../components/NavBar";
 
 // On utilise la police Inter, très sobre et lisible
 const inter = Inter({ subsets: ["latin"] });
+
+// Police manuscrite, exposée en variable CSS pour la classe "font-handwriting"
+const caveat = Caveat({ subsets: ["latin"], variable: "--font-caveat" });
 
 export const metadata: Metadata = {
   title: "La Colocantine",
@@ -17,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={caveat.variable}>
       <body className={`${inter.className} bg-cyan text-marron min-h-screen flex flex-col overflow-x-hidden`}>
         <NavBar />
         {/* Le contenu de chaque page viendra s'insérer dans ce "main" */}

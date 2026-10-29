@@ -7,6 +7,48 @@
   --color-marron: #492e1d;
   --color-cyan: #6f9594;
   --color-cyanfonce: #4d6969;
+  --color-beigefonce: #b39a74;
+
+  /* Police manuscrite (chargée via next/font dans layout.tsx) */
+  --font-handwriting: var(--font-caveat), cursive;
 }
 
+/* Livre d'or (mobile) : petit va-et-vient pour inciter à glisser */
+@keyframes inciter-swipe {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-8px); }
+}
 
+.animate-inciter-swipe {
+  animation: inciter-swipe 1.6s ease-in-out infinite;
+}
+
+/* Livre d'or (PC) : la feuille glisse sur toute la largeur du livre. Le pli avance deux fois
+   moins vite qu'elle : ce qui passe derrière le pli est rogné (clip-path), la page ne se déforme pas. */
+@keyframes feuille-vers-gauche {
+  from { transform: translateX(0); clip-path: inset(0 0 0 0); }
+  to { transform: translateX(-200%); clip-path: inset(0 0 0 100%); }
+}
+
+@keyframes feuille-vers-droite {
+  from { transform: translateX(0); clip-path: inset(0 0 0 0); }
+  to { transform: translateX(200%); clip-path: inset(0 100% 0 0); }
+}
+
+/* Page qui reste visible devant le pli, rognée au fur et à mesure que le pli avance */
+@keyframes rogner-par-la-droite {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 100% 0 0); }
+}
+
+@keyframes rogner-par-la-gauche {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 0 0 100%); }
+}
+
+/* Ombre qui suit le pli ou le bord de la feuille (de --de à --a), en fondu au début et à la fin */
+@keyframes deplacer-ombre {
+  0% { left: var(--de); opacity: 0; }
+  15%, 85% { opacity: 1; }
+  100% { left: var(--a); opacity: 0; }
+}
