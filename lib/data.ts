@@ -95,6 +95,28 @@ export const messagesLivreDor: MessageLivreDor[] = [
   { id: 12, auteur: "Yanis", evenementId: "lasagnes", date: "2026-09-28", message: "Comme chez mamie, mais en mieux (ne lui dites pas)." },
 ];
 
+// Infos de contact affichées dans le pied de page
+// TODO : remplacer par les vraies infos (valeurs provisoires)
+export const contact = {
+  email: "contact@lacolocantine.fr",
+  adresse: "ALJT 504, 4 rue de la Courcive, 91120 Palaiseau",
+  ville: "Palaiseau",
+  instagram: "lacolocantine", // sans le @
+};
+
+export type MembreEquipe = {
+  prenom: string;
+  role: string;
+  photo?: string; // ex : "/photos/equipe/jeremy.jpg"
+};
+
+export const equipe: MembreEquipe[] = [
+  { prenom: "Jérémy", role: "Chômeur" },
+  { prenom: "Gabriel", role: "Prouveur" },
+  { prenom: "Yahya", role: "Artisan kebabier" },
+  { prenom: "Erwan", role: "Respo Vaiselle" },
+];
+
 // "2026-11-14" -> "samedi 14 novembre 2026"
 export function formatDate(iso: string) {
   return new Date(`${iso}T12:00:00`).toLocaleDateString("fr-FR", {

@@ -13,6 +13,13 @@
   --font-handwriting: var(--font-caveat), cursive;
 }
 
+/* Motif de fond (PC) : un fil continu qui boucle, comme une écriture attachée,
+   dans un bleu à peine plus clair que le fond "cyan". Deux rangs décalés par tuile. */
+@utility motif-boucles {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='52'%3E%3Cg fill='none' stroke='%237fa4a3' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M0 22 C12 22 22 19 24 12 C26 5 17 3 16 10 C15 17 26 22 40 22'/%3E%3Cpath d='M-20 48 C-8 48 2 45 4 38 C6 31 -3 29 -4 36 C-5 43 6 48 20 48'/%3E%3Cpath d='M20 48 C32 48 42 45 44 38 C46 31 37 29 36 36 C35 43 46 48 60 48'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 40px 52px;
+}
+
 /* Livre d'or (mobile) : petit va-et-vient pour inciter à glisser */
 @keyframes inciter-swipe {
   0%, 100% { transform: translateX(0); }

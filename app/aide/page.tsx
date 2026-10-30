@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ChevronDown } from "lucide-react";
 import PaperCard from "@/components/PaperCard";
+import TitrePage from "@/components/TitrePage";
 
 export const metadata: Metadata = {
   title: "Aide - La Colocantine",
@@ -32,10 +33,7 @@ const questions = [
 export default function AidePage() {
   return (
     <div className="w-full max-w-3xl mx-auto py-4">
-      <header className="text-center text-white mb-10">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Aide</h1>
-        <p className="mt-3 text-lg opacity-90">Les questions qu&apos;on nous pose souvent.</p>
-      </header>
+      <TitrePage titre="Aide" sousTitre="Les questions qu'on nous pose souvent." />
 
       <PaperCard tilt="left">
         <div className="p-6 md:p-10 divide-y divide-marron/15">

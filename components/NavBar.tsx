@@ -87,8 +87,8 @@ export default function NavBar() {
       
       {/* Panneau coulissant */}
       <div 
-        className={`fixed top-0 right-0 h-[100dvh] w-70 bg-white shadow-2xl z-[100] lg:hidden transition-transform duration-500 ease-in-out flex flex-col ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 h-[100dvh] w-70 bg-white z-[100] lg:hidden transition-transform duration-500 ease-in-out flex flex-col ${
+          isOpen ? "translate-x-0 shadow-2xl" : "translate-x-full"
         }`}
       >
         {/* En-tête du menu avec le bouton pour fermer */}

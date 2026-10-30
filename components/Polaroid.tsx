@@ -8,11 +8,19 @@ type PolaroidProps = {
   caption?: string;
   tilt?: Tilt;
   className?: string;
+  legendeClassName?: string; // taille / marge de la légende
 };
 
 // Photo style Polaroïd, inclinée en entier (cadre, photo et légende).
 // Sans "src", un emplacement photo est affiché (à remplacer par de vraies photos dans /public/photos).
-export default function Polaroid({ src, alt, caption, tilt = "right-strong", className = "" }: PolaroidProps) {
+export default function Polaroid({
+  src,
+  alt,
+  caption,
+  tilt = "right-strong",
+  className = "",
+  legendeClassName = "text-2xl mt-3",
+}: PolaroidProps) {
   return (
     <figure
       className={`bg-white rounded-sm shadow-xl border border-marron/20 p-3 pb-4 transition-transform duration-500 ease-out hover:rotate-0 ${tilts[tilt]} ${className}`}
@@ -28,7 +36,7 @@ export default function Polaroid({ src, alt, caption, tilt = "right-strong", cla
         )}
       </div>
       {caption && (
-        <figcaption className="font-handwriting text-2xl text-center mt-3 leading-tight">
+        <figcaption className={`font-handwriting text-center leading-tight ${legendeClassName}`}>
           {caption}
         </figcaption>
       )}
