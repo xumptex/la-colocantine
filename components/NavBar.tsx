@@ -1,12 +1,28 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Menu, X, User } from 'lucide-react';
+import { creerClientNavigateur } from '@/lib/supabase/client';
+import { supabaseConfigure } from '@/lib/supabase/env';
 
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Connecté ou non : "Mon compte" remplace "Connexion".
+  // Revérifié à chaque changement de page (la connexion se fait côté serveur).
+  const [connecte, setConnecte] = useState(false);
+  const pathname = usePathname();
+  useEffect(() => {
+    if (!supabaseConfigure()) return;
+    const supabase = creerClientNavigateur();
+    supabase.auth.getSession().then(({ data }) => setConnecte(Boolean(data.session)));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evenement, session) => setConnecte(Boolean(session)));
+    return () => subscription.unsubscribe();
+  }, [pathname]);
+  const lienCompte = connecte ? { name: 'Mon compte', href: '/compte' } : { name: 'Connexion', href: '/login' };
 
   const navLinks = [
     { name: 'Accueil', href: '/' },
@@ -55,11 +71,10 @@ export default function NavBar() {
             <User size={20} />
             {/* Connexion PC seul à droite avec l'icône */}
             <Link 
-              href="/login" 
+              href={lienCompte.href} 
               className="hidden lg:flex items-center relative text-marron font-semibold after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-marron after:scale-x-0 after:origin-left hover:after:scale-x-100 after:transition-transform after:duration-400 after:ease-out"
             >
-              
-              Connexion
+              {lienCompte.name}
             </Link>
 
             {/* Bouton Hamburger Mobile (Caché sur PC) */}
@@ -119,12 +134,12 @@ export default function NavBar() {
         {/* Zone de connexion bloquée en bas */}
         <div className="p-6 border-marron/10 shrink-0 ">
           <Link
-            href="/login" 
+            href={lienCompte.href} 
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 block w-full text-left font-medium text-lg text-marron hover:opacity-70"
           >
             <User size={22} />
-            Connexion
+            {lienCompte.name}
           </Link>
         </div>
       </div>

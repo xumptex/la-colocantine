@@ -9,8 +9,18 @@
   --color-cyanfonce: #4d6969;
   --color-beigefonce: #b39a74;
 
-  /* Police manuscrite (chargée via next/font dans layout.tsx) */
-  --font-handwriting: var(--font-caveat), cursive;
+  /* Polices choisies par les admins (mode édition > Polices). Les variables --police-*
+     sont posées sur <html> par layout.tsx, à partir des polices chargées dans lib/polices.ts */
+  --font-sans: var(--police-texte), ui-sans-serif, system-ui, sans-serif;
+  --font-titres: var(--police-titres), ui-sans-serif, system-ui, sans-serif;
+  --font-handwriting: var(--police-manuscrite), cursive;
+}
+
+/* Polices par défaut, si aucune n'a été choisie */
+:root {
+  --police-titres: var(--font-inter);
+  --police-texte: var(--font-inter);
+  --police-manuscrite: var(--font-caveat);
 }
 
 /* Motif de fond (PC) : un fil continu qui boucle, comme une écriture attachée,

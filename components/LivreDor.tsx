@@ -1,130 +1,112 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, PenLine } from "lucide-react";
-import { evenementsPasses, messagesLivreDor, type MessageLivreDor } from "@/lib/data";
+import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
+import type { Commentaire } from "@/lib/livre-dor";
+import { supprimerCommentaire } from "@/app/livre-d-or/actions";
 import Livre from "./Livre";
+import FormulaireCommentaire from "./FormulaireCommentaire";
+import { useCommentaires } from "./Commentaires";
+import { useEdition } from "./edition/Edition";
 
-const MESSAGES_PAR_PAGE = 3;
+// Place prise par un message sur une page : un message avec photos compte double
+const CAPACITE_PAGE = 3;
+const poids = (c: Commentaire) => (c.photos.length > 0 ? 2 : 1);
+
+function paginer(commentaires: Commentaire[]) {
+  const pages: Commentaire[][] = [];
+  let page: Commentaire[] = [];
+  let rempli = 0;
+  for (const c of commentaires) {
+    if (page.length && rempli + poids(c) > CAPACITE_PAGE) {
+      pages.push(page);
+      page = [];
+      rempli = 0;
+    }
+    page.push(c);
+    rempli += poids(c);
+  }
+  if (page.length) pages.push(page);
+  return pages;
+}
 
 export default function LivreDor() {
-  const [messages, setMessages] = useState<MessageLivreDor[]>(messagesLivreDor);
+  const commentaires = useCommentaires();
+  const { estAdmin } = useEdition();
+  const router = useRouter();
   const [recherche, setRecherche] = useState("");
   const [filtre, setFiltre] = useState("tous");
+  const [supprimes, setSupprimes] = useState<string[]>([]);
 
-  // Formulaire "laisser un mot" (front uniquement, rien n'est sauvegardé)
-  const [auteur, setAuteur] = useState("");
-  const [evenementId, setEvenementId] = useState(evenementsPasses[evenementsPasses.length - 1].id);
-  const [texte, setTexte] = useState("");
+  // Repas qui ont au moins un commentaire (pour le filtre)
+  const repas = useMemo(() => {
+    const vus = new Map<string, string>();
+    commentaires.forEach((c) => vus.set(c.repasId, c.repasTitre));
+    return [...vus].map(([id, titre]) => ({ id, titre }));
+  }, [commentaires]);
 
-  const pages = useMemo(() => {
+  const visibles = useMemo(() => {
     const q = recherche.trim().toLowerCase();
-    const filtres = messages
-      .filter((m) => filtre === "tous" || m.evenementId === filtre)
-      .filter((m) => !q || m.message.toLowerCase().includes(q) || m.auteur.toLowerCase().includes(q))
-      .sort((a, b) => b.date.localeCompare(a.date));
+    return commentaires
+      .filter((c) => !supprimes.includes(c.id))
+      .filter((c) => filtre === "tous" || c.repasId === filtre)
+      .filter((c) => !q || c.message.toLowerCase().includes(q) || c.prenom.toLowerCase().includes(q));
+  }, [commentaires, supprimes, recherche, filtre]);
 
-    const resultat: MessageLivreDor[][] = [];
-    for (let i = 0; i < filtres.length; i += MESSAGES_PAR_PAGE) {
-      resultat.push(filtres.slice(i, i + MESSAGES_PAR_PAGE));
-    }
-    return resultat;
-  }, [messages, recherche, filtre]);
+  const pages = useMemo(() => paginer(visibles), [visibles]);
 
-  const ajouterMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessages([
-      {
-        id: Date.now(),
-        auteur,
-        evenementId,
-        message: texte,
-        date: new Date().toISOString().slice(0, 10),
-      },
-      ...messages,
-    ]);
-    setAuteur("");
-    setTexte("");
-    setFiltre("tous");
-    setRecherche("");
+  const supprimer = async (c: Commentaire) => {
+    if (!window.confirm(`Supprimer le mot de ${c.prenom} ?`)) return;
+    const resultat = await supprimerCommentaire(c.id);
+    if (resultat.erreur) return window.alert(resultat.erreur);
+    setSupprimes((s) => [...s, c.id]);
+    router.refresh();
   };
 
   return (
     <div className="space-y-10">
-
       {/* En-tête : recherche + filtre */}
-      <div className="flex flex-col sm:flex-row gap-3 max-w-3xl mx-auto">
-        <label className="relative flex-1">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-60" />
-          <input
-            type="search"
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-            placeholder="Rechercher un mot, un prénom..."
-            className="w-full bg-white border border-marron/30 rounded-sm pl-10 pr-3 py-2 shadow-md focus:outline-none focus:border-marron"
-          />
-        </label>
-        <select
-          value={filtre}
-          onChange={(e) => setFiltre(e.target.value)}
-          className="bg-white border border-marron/30 rounded-sm px-3 py-2 shadow-md focus:outline-none focus:border-marron"
-          aria-label="Filtrer par repas"
-        >
-          <option value="tous">Tous les repas</option>
-          {evenementsPasses.map((e) => (
-            <option key={e.id} value={e.id}>{e.titre}</option>
-          ))}
-        </select>
-      </div>
-
-      {pages.length === 0 ? (
-        <div className="bg-white rounded-sm shadow-2xl border border-marron/20 p-10 text-center font-handwriting text-3xl opacity-80">
-          Aucun message ne correspond...
-        </div>
-      ) : (
-        // La "key" ramène le livre à la première page après une recherche, un filtre ou un nouveau message
-        <Livre key={`${filtre}|${recherche}|${messages.length}`} pages={pages} />
-      )}
-
-      {/* Laisser un mot */}
-      <form
-        onSubmit={ajouterMessage}
-        className="max-w-2xl mx-auto bg-white rounded-sm shadow-xl border border-marron/20 p-6 md:p-8 space-y-4"
-      >
-        <h2 className="flex items-center gap-2 text-2xl font-semibold">
-          <PenLine size={22} /> Laisser un mot
-        </h2>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <input
-            required
-            value={auteur}
-            onChange={(e) => setAuteur(e.target.value)}
-            placeholder="Ton prénom"
-            className="border border-marron/30 rounded-sm px-3 py-2 focus:outline-none focus:border-marron"
-          />
+      {commentaires.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-3 max-w-3xl mx-auto">
+          <label className="relative flex-1">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-60" />
+            <input
+              type="search"
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+              placeholder="Rechercher un mot, un prénom..."
+              className="w-full bg-white border border-marron/30 rounded-sm pl-10 pr-3 py-2 shadow-md focus:outline-none focus:border-marron"
+            />
+          </label>
           <select
-            value={evenementId}
-            onChange={(e) => setEvenementId(e.target.value)}
-            className="border border-marron/30 rounded-sm px-3 py-2 bg-white focus:outline-none focus:border-marron"
-            aria-label="Repas concerné"
+            value={filtre}
+            onChange={(e) => setFiltre(e.target.value)}
+            className="bg-white border border-marron/30 rounded-sm px-3 py-2 shadow-md focus:outline-none focus:border-marron"
+            aria-label="Filtrer par repas"
           >
-            {evenementsPasses.map((e) => (
-              <option key={e.id} value={e.id}>{e.titre}</option>
+            <option value="tous">Tous les repas</option>
+            {repas.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.titre}
+              </option>
             ))}
           </select>
         </div>
-        <textarea
-          required
-          value={texte}
-          onChange={(e) => setTexte(e.target.value)}
-          rows={3}
-          placeholder="C'était comment ?"
-          className="w-full border border-marron/30 rounded-sm px-3 py-2 font-handwriting text-2xl focus:outline-none focus:border-marron resize-none"
-        />
-        <button type="submit" className="w-full bg-marron text-white px-6 py-3 font-medium rounded-sm hover:bg-marron/90 transition-colors">
-          Signer le livre d&apos;or
-        </button>
-      </form>
+      )}
+
+      {pages.length === 0 ? (
+        <div className="bg-white rounded-sm shadow-2xl border border-marron/20 p-10 text-center font-handwriting text-3xl">
+          <span className="opacity-80">
+            {commentaires.length === 0 ? "Le livre d'or attend ses premiers mots..." : "Aucun message ne correspond..."}
+          </span>
+        </div>
+      ) : (
+        // La "key" ramène le livre à la première page après une recherche, un filtre ou un changement
+        <Livre key={`${filtre}|${recherche}|${visibles.length}`} pages={pages} onSupprimer={estAdmin ? supprimer : undefined} />
+      )}
+
+      <FormulaireCommentaire />
     </div>
   );
 }

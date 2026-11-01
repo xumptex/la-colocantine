@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Hand } from "lucide-react";
 import PageLivre from "./PageLivre";
-import type { MessageLivreDor } from "@/lib/data";
+import type { Commentaire } from "@/lib/livre-dor";
 
 const DUREE_PC = 900; // durée d'un tour de page sur PC, en ms
 const DUREE_GLISSE = 350; // durée de fin de glissement sur téléphone, en ms
@@ -12,7 +12,8 @@ const SEUIL_GLISSE = 0.25; // part de la largeur à glisser pour tourner la page
 type Sens = "suivante" | "precedente";
 
 type LivreProps = {
-  pages: MessageLivreDor[][];
+  pages: Commentaire[][];
+  onSupprimer?: (commentaire: Commentaire) => void; // admins seulement
 };
 
 // Fait tourner la page pendant DUREE_PC ms puis valide le changement.
@@ -98,7 +99,7 @@ function TourDePage({ sens, feuille, devant }: TourDePageProps) {
 }
 
 // PC : livre ouvert sur une double page
-function LivreDouble({ pages }: LivreProps) {
+function LivreDouble({ pages, onSupprimer }: LivreProps) {
   const [doublePage, setDoublePage] = useState(0);
   const [tourne, tourner] = useTourDePage((sens) => setDoublePage((d) => d + (sens === "suivante" ? 1 : -1)));
 
@@ -110,7 +111,7 @@ function LivreDouble({ pages }: LivreProps) {
   const droiteDessous = gaucheDessous + 1;
 
   const page = (i: number) => (
-    <PageLivre messages={pages[i]} numero={i + 1} className="h-full border border-beigefonce/60" />
+    <PageLivre messages={pages[i]} numero={i + 1} onSupprimer={onSupprimer} className="h-full border border-beigefonce/60" />
   );
 
   const fleche = "absolute bottom-3 z-30 p-1 text-beigefonce hover:text-marron transition-colors";
@@ -153,7 +154,7 @@ function LivreDouble({ pages }: LivreProps) {
 }
 
 // Téléphone : comme une liseuse, la page glisse sous le doigt et recouvre / découvre l'autre
-function LivreSimple({ pages }: LivreProps) {
+function LivreSimple({ pages, onSupprimer }: LivreProps) {
   const [pageCourante, setPageCourante] = useState(0);
   const [aDejaTourne, setADejaTourne] = useState(false);
 
@@ -218,7 +219,7 @@ function LivreSimple({ pages }: LivreProps) {
       )}
 
       <div ref={zone} className="relative overflow-hidden rounded-sm shadow-2xl">
-        <PageLivre messages={pages[dessous]} numero={dessous + 1} className="min-h-[36rem]" />
+        <PageLivre messages={pages[dessous]} numero={dessous + 1} onSupprimer={onSupprimer} className="min-h-[36rem]" />
 
         {sens && (
           <div
@@ -265,14 +266,14 @@ function LivreSimple({ pages }: LivreProps) {
 }
 
 // Double page sur PC, une page à la fois sur téléphone (bascule au breakpoint lg)
-export default function Livre({ pages }: LivreProps) {
+export default function Livre({ pages, onSupprimer }: LivreProps) {
   return (
     <>
       <div className="hidden lg:block">
-        <LivreDouble pages={pages} />
+        <LivreDouble pages={pages} onSupprimer={onSupprimer} />
       </div>
       <div className="lg:hidden">
-        <LivreSimple pages={pages} />
+        <LivreSimple pages={pages} onSupprimer={onSupprimer} />
       </div>
     </>
   );
